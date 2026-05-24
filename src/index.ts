@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { runHealth } from './commands/health.js';
 import { runConfigGet, runConfigInit, runConfigSet, runConfigShow } from './commands/config.js';
+import { runDoctor } from './commands/doctor.js';
 
 const program = new Command();
 
@@ -41,6 +42,13 @@ program
     await runConfigGet(key);
   });
 
+
+program
+  .command('doctor')
+  .description('Run local CLI and backend diagnostics')
+  .action(async () => {
+    await runDoctor();
+  });
 program
   .command('config:set')
   .description('Set a config key')
