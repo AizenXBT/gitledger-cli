@@ -82,6 +82,12 @@ Read a config key:
 npm run dev -- config:get backendUrl
 ```
 
+Run diagnostics (config + backend health):
+
+```bash
+npm run dev -- doctor
+```
+
 ## Project layout
 
 - `src/index.ts` CLI entrypoint
