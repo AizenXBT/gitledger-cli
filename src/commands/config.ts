@@ -1,5 +1,5 @@
 import { info, success, fail } from '../lib/output.js';
-import { getConfigPath, loadConfig, saveConfig, setConfigKey, type CliConfig } from '../config/store.js';
+import { getConfigPath, loadConfig, saveConfig, setConfigKey, unsetConfigKey, type CliConfig } from '../config/store.js';
 
 export async function runConfigShow(): Promise<void> {
   const current = await loadConfig();
@@ -32,4 +32,13 @@ export async function runConfigSet(key: keyof CliConfig, value: string): Promise
 
   const file = await setConfigKey(key, value as CliConfig[typeof key]);
   success(`Updated ${key} in ${file}`);
+}
+
+export async function runConfigUnset(key: keyof CliConfig): Promise<void> {
+  if (!['backendUrl', 'chain', 'walletAddress', 'notifierWebhookUrl'].includes(key)) {
+    fail(`Unsupported config key: ${key}`);
+  }
+
+  const file = await unsetConfigKey(key);
+  success(`Unset ${key} in ${file}`);
 }

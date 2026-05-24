@@ -45,6 +45,16 @@ export async function setConfigKey<K extends keyof CliConfig>(key: K, value: Cli
   return saveConfig(current);
 }
 
+export async function unsetConfigKey<K extends keyof CliConfig>(key: K): Promise<string> {
+  const current = await loadConfig();
+  if (key === 'backendUrl' || key === 'chain') {
+    current[key] = DEFAULT_CONFIG[key];
+  } else {
+    delete current[key];
+  }
+  return saveConfig(current);
+}
+
 export function getConfigPath(): string {
   return configPath();
 }

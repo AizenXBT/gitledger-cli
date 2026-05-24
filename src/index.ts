@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { runHealth } from './commands/health.js';
-import { runConfigGet, runConfigInit, runConfigSet, runConfigShow } from './commands/config.js';
+import { runConfigGet, runConfigInit, runConfigSet, runConfigShow, runConfigUnset } from './commands/config.js';
+import { runDoctor } from './commands/doctor.js';
 
 const program = new Command();
 
@@ -39,6 +40,21 @@ program
   .argument('<key>', 'backendUrl|chain|walletAddress|notifierWebhookUrl')
   .action(async (key: 'backendUrl' | 'chain' | 'walletAddress' | 'notifierWebhookUrl') => {
     await runConfigGet(key);
+  });
+
+program
+  .command('config:unset')
+  .description('Unset a config key')
+  .argument('<key>', 'backendUrl|chain|walletAddress|notifierWebhookUrl')
+  .action(async (key: 'backendUrl' | 'chain' | 'walletAddress' | 'notifierWebhookUrl') => {
+    await runConfigUnset(key);
+  });
+
+program
+  .command('doctor')
+  .description('Run local CLI and backend diagnostics')
+  .action(async () => {
+    await runDoctor();
   });
 
 program
