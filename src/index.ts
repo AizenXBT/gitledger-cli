@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { runHealth } from './commands/health.js';
 import { runConfigGet, runConfigInit, runConfigSet, runConfigShow } from './commands/config.js';
+import { runDoctor } from './commands/doctor.js';
 
 const program = new Command();
 
@@ -39,6 +40,14 @@ program
   .argument('<key>', 'backendUrl|chain|walletAddress|notifierWebhookUrl')
   .action(async (key: 'backendUrl' | 'chain' | 'walletAddress' | 'notifierWebhookUrl') => {
     await runConfigGet(key);
+  });
+
+program
+  .command('doctor')
+  .description('Run local CLI and backend diagnostics')
+  .option('--json', 'Output doctor report as JSON')
+  .action(async (opts: { json?: boolean }) => {
+    await runDoctor(opts);
   });
 
 program
