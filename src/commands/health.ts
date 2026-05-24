@@ -2,6 +2,7 @@ import { info, success, warn } from '../lib/output.js';
 
 export type HealthOptions = {
   apiUrl?: string;
+  json?: boolean;
 };
 
 export async function runHealth(options: HealthOptions): Promise<void> {
@@ -12,7 +13,11 @@ export async function runHealth(options: HealthOptions): Promise<void> {
 
   const res = await fetch(url);
   if (!res.ok) {
-    warn(`Health endpoint returned status ${res.status}`);
+    if (options.json) {
+      console.log(JSON.stringify({ ok: false, status: res.status }));
+    } else {
+      warn(`Health endpoint returned status ${res.status}`);
+    }
     process.exitCode = 1;
     return;
   }
@@ -23,8 +28,17 @@ export async function runHealth(options: HealthOptions): Promise<void> {
   };
 
   if (!payload.ok) {
-    warn('Backend reports unhealthy state');
+    if (options.json) {
+      console.log(JSON.stringify(payload));
+    } else {
+      warn('Backend reports unhealthy state');
+    }
     process.exitCode = 1;
+    return;
+  }
+
+  if (options.json) {
+    console.log(JSON.stringify(payload));
     return;
   }
 

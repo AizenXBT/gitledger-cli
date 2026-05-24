@@ -50,6 +50,12 @@ Override backend URL:
 npm run dev -- health --api-url https://backend-uuq8.onrender.com
 ```
 
+Machine-readable health output:
+
+```bash
+npm run dev -- health --json
+```
+
 ### Show config
 
 ```bash

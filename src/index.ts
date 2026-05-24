@@ -14,7 +14,8 @@ program
   .command('health')
   .description('Check GitLedger backend health')
   .option('--api-url <url>', 'Override backend API URL')
-  .action(async (opts: { apiUrl?: string }) => {
+  .option('--json', 'Output raw JSON response')
+  .action(async (opts: { apiUrl?: string; json?: boolean }) => {
     await runHealth(opts);
   });
 
