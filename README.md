@@ -56,16 +56,37 @@ Machine-readable health output:
 npm run dev -- health --json
 ```
 
-### Show config
+### Config commands
+
+Initialize local config file (`~/.gitledger/config.json`):
+
+```bash
+npm run dev -- config:init
+```
+
+Show effective config:
 
 ```bash
 npm run dev -- config:show
+```
+
+Set backend URL in config:
+
+```bash
+npm run dev -- config:set backendUrl https://backend-uuq8.onrender.com
+```
+
+Read a config key:
+
+```bash
+npm run dev -- config:get backendUrl
 ```
 
 ## Project layout
 
 - `src/index.ts` CLI entrypoint
 - `src/commands/` command handlers
+- `src/config/` local config store logic
 - `src/lib/` shared output and utility helpers
 
 ## Contributing
