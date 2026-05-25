@@ -1,4 +1,4 @@
-import { loadConfig } from '../config/store.js';
+import { loadConfig, writeLastHealthReport } from '../config/store.js';
 import { info, success, warn } from '../lib/output.js';
 
 export type HealthOptions = {
@@ -15,8 +15,10 @@ export async function runHealth(options: HealthOptions): Promise<void> {
 
   const res = await fetch(url);
   if (!res.ok) {
+    const failure = { ok: false, status: res.status, checkedAt: new Date().toISOString() };
+    await writeLastHealthReport(failure);
     if (options.json) {
-      console.log(JSON.stringify({ ok: false, status: res.status }));
+      console.log(JSON.stringify(failure));
     } else {
       warn(`Health endpoint returned status ${res.status}`);
     }
@@ -28,6 +30,13 @@ export async function runHealth(options: HealthOptions): Promise<void> {
     ok?: boolean;
     services?: Record<string, { status?: string }>;
   };
+
+  const report = {
+    checkedAt: new Date().toISOString(),
+    url,
+    payload,
+  };
+  await writeLastHealthReport(report);
 
   if (!payload.ok) {
     if (options.json) {

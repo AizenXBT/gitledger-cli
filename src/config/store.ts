@@ -18,6 +18,10 @@ function configPath(): string {
   return join(homedir(), '.gitledger', 'config.json');
 }
 
+function healthReportPath(): string {
+  return join(homedir(), '.gitledger', 'health-last.json');
+}
+
 export async function loadConfig(): Promise<CliConfig> {
   const file = configPath();
   try {
@@ -43,6 +47,13 @@ export async function setConfigKey<K extends keyof CliConfig>(key: K, value: Cli
   const current = await loadConfig();
   current[key] = value;
   return saveConfig(current);
+}
+
+export async function writeLastHealthReport(report: unknown): Promise<string> {
+  const file = healthReportPath();
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  return file;
 }
 
 export function getConfigPath(): string {
