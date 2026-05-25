@@ -4,12 +4,22 @@ import { info, success, warn } from '../lib/output.js';
 export type HealthOptions = {
   apiUrl?: string;
   json?: boolean;
+  requireServices?: string;
 };
+
+function parseRequiredServices(input?: string): string[] {
+  if (!input) return [];
+  return input
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
 
 export async function runHealth(options: HealthOptions): Promise<void> {
   const cfg = await loadConfig();
   const base = options.apiUrl ?? process.env.GITLEDGER_API_URL ?? cfg.backendUrl;
   const url = `${base.replace(/\/$/, '')}/health`;
+  const required = parseRequiredServices(options.requireServices);
 
   info(`Checking backend health: ${url}`);
 
@@ -80,15 +90,32 @@ export async function runHealth(options: HealthOptions): Promise<void> {
     return;
   }
 
+  const services = payload.services ?? {};
+  const missingOrDown = required.filter((name) => (services[name]?.status ?? 'unknown') !== 'up');
+
+  if (missingOrDown.length > 0) {
+    if (options.json) {
+      console.log(JSON.stringify({ ok: false, reason: 'required_services_not_healthy', services: missingOrDown, payload }));
+    } else {
+      warn(`Required services not healthy: ${missingOrDown.join(', ')}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
   if (options.json) {
     console.log(JSON.stringify(payload));
     return;
   }
 
-  const services = payload.services ?? {};
   const summary = Object.entries(services)
     .map(([name, data]) => `${name}:${data.status ?? 'unknown'}`)
     .join(', ');
+
+  if (required.length > 0) {
+    success(`Backend healthy (${summary}) | required: ${required.join(', ')}`);
+    return;
+  }
 
   success(`Backend healthy (${summary})`);
 }
