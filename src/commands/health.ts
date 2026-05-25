@@ -13,9 +13,24 @@ export async function runHealth(options: HealthOptions): Promise<void> {
 
   info(`Checking backend health: ${url}`);
 
-  const res = await fetch(url);
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const failure = { ok: false, error: 'network_error', message, checkedAt: new Date().toISOString(), url };
+    await writeLastHealthReport(failure);
+    if (options.json) {
+      console.log(JSON.stringify(failure));
+    } else {
+      warn(`Health request failed: ${message}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
   if (!res.ok) {
-    const failure = { ok: false, status: res.status, checkedAt: new Date().toISOString() };
+    const failure = { ok: false, status: res.status, checkedAt: new Date().toISOString(), url };
     await writeLastHealthReport(failure);
     if (options.json) {
       console.log(JSON.stringify(failure));
@@ -26,10 +41,27 @@ export async function runHealth(options: HealthOptions): Promise<void> {
     return;
   }
 
-  const payload = (await res.json()) as {
+  let payload: {
     ok?: boolean;
     services?: Record<string, { status?: string }>;
   };
+
+  try {
+    payload = (await res.json()) as {
+      ok?: boolean;
+      services?: Record<string, { status?: string }>;
+    };
+  } catch {
+    const failure = { ok: false, error: 'invalid_json', checkedAt: new Date().toISOString(), url };
+    await writeLastHealthReport(failure);
+    if (options.json) {
+      console.log(JSON.stringify(failure));
+    } else {
+      warn('Health endpoint returned invalid JSON');
+    }
+    process.exitCode = 1;
+    return;
+  }
 
   const report = {
     checkedAt: new Date().toISOString(),
